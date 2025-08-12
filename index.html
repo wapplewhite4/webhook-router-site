@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Webhook Router – FDA → Slack/Teams/Discord</title>
+  <meta name="description" content="Simple webhook router that turns FDA events into Slack, Teams, Discord, or HTTP notifications. Fast, secure, and cheap." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://rsms.me" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <style>
+    html { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .kbd { @apply inline-flex items-center px-2 py-0.5 rounded-md bg-gray-800 text-gray-100 text-xs ring-1 ring-inset ring-gray-700; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <!-- Header -->
+  <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-gray-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-black text-white grid place-items-center text-sm">WR</div>
+        <span class="font-semibold">Webhook Router</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#features" class="hover:text-black">Features</a>
+        <a href="#how" class="hover:text-black">How it works</a>
+        <a href="#quickstart" class="hover:text-black">Quickstart</a>
+        <a href="#api" class="hover:text-black">API</a>
+        <a href="#pricing" class="hover:text-black">Pricing</a>
+        <a href="#faq" class="hover:text-black">FAQ</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="#pricing" class="hidden md:inline-block px-3 py-1.5 rounded-xl border border-gray-300 hover:border-gray-900">Buy</a>
+        <a href="#quickstart" class="inline-block px-3 py-1.5 rounded-xl bg-black text-white hover:bg-gray-900">Docs</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-b from-white to-gray-50">
+    <div class="max-w-6xl mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight">Turn FDA events into Slack/Teams alerts — in minutes</h1>
+        <p class="mt-4 text-gray-700 text-lg">Webhook Router ingests JSON, applies sensible templates for FDA guidance & recalls, and delivers to <span class="font-semibold">Slack</span>, <span class="font-semibold">Microsoft Teams</span>, <span class="font-semibold">Discord</span>, or a generic webhook.</p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#pricing" class="px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Buy access</a>
+          <a href="#quickstart" class="px-4 py-2 rounded-xl border border-gray-300 hover:border-gray-900">Read the docs</a>
+        </div>
+        <p class="mt-3 text-xs text-gray-500">Hosted on Fly.io • Own API key • Optional HMAC signing • Postgres-backed</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-4 md:p-6 border border-gray-200">
+        <pre class="code text-sm overflow-x-auto"><code># Send an event
+BODY='{"title":"Guidance XYZ","url":"https://www.fda.gov/...","center":"CDER","date":"2025-08-11","summary":"..."}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SIGNING_SECRET" -r | awk '{print $1}')
+
+curl -s -X POST https://api.yourdomain.com/ingest/fda.guidance \
+  -H "X-Api-Key: $API_KEY" \
+  -H "X-Signature: $SIG" \
+  -H "Content-Type: application/json" \
+  -d "$BODY"
+</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="max-w-6xl mx-auto px-4 py-12 grid md:grid-cols-3 gap-6">
+    <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+      <h3 class="font-semibold text-lg">Multi-destination</h3>
+      <p class="text-gray-600 mt-2">Slack incoming webhooks, Teams connector cards, Discord, or generic HTTP.</p>
+    </div>
+    <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+      <h3 class="font-semibold text-lg">FDA-aware templates</h3>
+      <p class="text-gray-600 mt-2">Auto-formats guidance & recalls: title, center, date, reason, links.</p>
+    </div>
+    <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+      <h3 class="font-semibold text-lg">Secure by default</h3>
+      <p class="text-gray-600 mt-2">Per-project API keys + optional HMAC SHA-256 signatures.</p>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl md:text-3xl font-bold">How it works</h2>
+    <ol class="mt-6 grid md:grid-cols-3 gap-6">
+      <li class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <span class="text-xs uppercase text-gray-500">Step 1</span>
+        <h3 class="font-semibold mt-1">Create a project</h3>
+        <p class="text-gray-600 mt-2">We generate or accept your API key and optional signing secret.</p>
+      </li>
+      <li class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <span class="text-xs uppercase text-gray-500">Step 2</span>
+        <h3 class="font-semibold mt-1">Add routes</h3>
+        <p class="text-gray-600 mt-2">Map topics like <code class="code">fda.guidance</code> to Slack/Teams/Discord/webhook endpoints.</p>
+      </li>
+      <li class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <span class="text-xs uppercase text-gray-500">Step 3</span>
+        <h3 class="font-semibold mt-1">POST events</h3>
+        <p class="text-gray-600 mt-2">Send JSON to <code class="code">/ingest/{topic}</code>. We queue, retry with backoff, and deliver.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Quickstart -->
+  <section id="quickstart" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl md:text-3xl font-bold">Quickstart</h2>
+    <div class="grid md:grid-cols-2 gap-6 mt-6">
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">1) Create a project (admin only)</h3>
+        <pre class="code text-sm overflow-x-auto mt-3"><code>curl -s -X POST https://api.yourdomain.com/v1/projects \
+  -H "X-Admin-Key: &lt;ADMIN_BOOTSTRAP_KEY&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name":"acme-prod",
+    "api_key":"&lt;SAVE_THIS_KEY&gt;",
+    "signing_secret":"&lt;SAVE_THIS_HMAC&gt;",
+    "plan":"basic"
+  }'
+</code></pre>
+      </div>
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">2) Add a Slack route</h3>
+        <pre class="code text-sm overflow-x-auto mt-3"><code>curl -s -X POST https://api.yourdomain.com/v1/routes \
+  -H "X-Api-Key: &lt;SAVE_THIS_KEY&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topic":"fda.guidance",
+    "kind":"slack_webhook",
+    "endpoint":"https://hooks.slack.com/services/XXX/YYY/ZZZ",
+    "template_key":"guidance"
+  }'
+</code></pre>
+      </div>
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm md:col-span-2">
+        <h3 class="font-semibold">3) Send an event (with HMAC)</h3>
+        <pre class="code text-sm overflow-x-auto mt-3"><code>BODY='{"title":"Guidance XYZ","url":"https://www.fda.gov/...","center":"CDER","date":"2025-08-11","summary":"Short summary."}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "&lt;SAVE_THIS_HMAC&gt;" -r | awk '{print $1}')
+
+curl -s -X POST https://api.yourdomain.com/ingest/fda.guidance \
+  -H "X-Api-Key: &lt;SAVE_THIS_KEY&gt;" \
+  -H "X-Signature: $SIG" \
+  -H "Content-Type: application/json" \
+  -d "$BODY"
+</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- API Reference -->
+  <section id="api" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl md:text-3xl font-bold">API Reference</h2>
+
+    <div class="mt-6 space-y-8">
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">Auth</h3>
+        <p class="text-gray-600 mt-2">All requests must include <span class="code">X-Api-Key</span>. For ingestion, add <span class="code">X-Signature</span> (hex SHA-256 HMAC of the raw body with your signing secret) if the project or global secret is set.</p>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">POST /v1/projects <span class="text-xs text-gray-500">(admin)</span></h3>
+        <p class="text-gray-600 mt-2">Create a project (API key + optional signing secret).</p>
+        <pre class="code text-sm overflow-x-auto mt-3"><code>Headers: X-Admin-Key, Content-Type: application/json
+Body: {
+  name: string,
+  api_key: string (min 12 chars),
+  signing_secret?: string,
+  plan?: "free" | "basic" | "pro"
+}
+Response: { id, name, plan }
+</code></pre>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">POST /v1/routes</h3>
+        <p class="text-gray-600 mt-2">Create a route bound to a topic.</p>
+        <pre class="code text-sm overflow-x-auto mt-3"><code>Headers: X-Api-Key, Content-Type: application/json
+Body: {
+  topic: string,                       // e.g. "fda.guidance"
+  kind: "slack_webhook" | "teams_webhook" | "discord_webhook" | "http_webhook",
+  endpoint: string,                    // destination webhook URL
+  template_key?: "auto" | "guidance" | "device_recall" | "drug_recall",
+  enabled?: boolean
+}
+Response: { id, topic, kind, endpoint, template_key, enabled }
+</code></pre>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">GET /v1/routes</h3>
+        <p class="text-gray-600 mt-2">List your routes.</p>
+        <pre class="code text-sm overflow-x-auto mt-3"><code>Headers: X-Api-Key
+Response: Route[]</code></pre>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">POST /ingest/{topic}</h3>
+        <p class="text-gray-600 mt-2">Ingest an event payload for a topic. Routes with a matching topic will receive formatted messages.</p>
+        <pre class="code text-sm overflow-x-auto mt-3"><code>Headers: X-Api-Key, X-Signature (optional/required if signing is configured)
+Body: { payload: any JSON } OR raw JSON (service accepts raw JSON bodies and wraps internally)
+Response: { status: "accepted", event_id: number, routes: number[], soft_limit: boolean }
+Errors: 401 (auth), 404 (no route), 429 (plan hard limit)
+</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl md:text-3xl font-bold">Pricing</h2>
+    <div class="grid md:grid-cols-3 gap-6 mt-6">
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold text-lg">Free</h3>
+        <p class="text-gray-600">1 project • 1 route • 1,000 events/mo</p>
+        <p class="text-3xl font-extrabold mt-4">$0</p>
+        <a href="#quickstart" class="mt-4 inline-block px-4 py-2 rounded-xl border border-gray-300 hover:border-gray-900">Start</a>
+      </div>
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm ring-2 ring-black">
+        <h3 class="font-semibold text-lg">Basic</h3>
+        <p class="text-gray-600">3 projects • 10 routes • 10k events/mo</p>
+        <p class="text-3xl font-extrabold mt-4">$9<span class="text-base font-normal">/mo</span></p>
+        <a href="https://your-checkout-link" class="mt-4 inline-block px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Buy</a>
+      </div>
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold text-lg">Pro</h3>
+        <p class="text-gray-600">Unlimited projects/routes • 100k events/mo</p>
+        <p class="text-3xl font-extrabold mt-4">$29<span class="text-base font-normal">/mo</span></p>
+        <a href="https://your-checkout-link" class="mt-4 inline-block px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Buy</a>
+      </div>
+    </div>
+    <p class="text-xs text-gray-500 mt-3">Need higher limits or on-prem? <a href="#contact" class="underline">Contact us</a>.</p>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl md:text-3xl font-bold">FAQ</h2>
+    <div class="mt-6 grid md:grid-cols-2 gap-6">
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">Do you store my payloads?</h3>
+        <p class="text-gray-600 mt-2">We store a minimal event record for delivery status and metering. No multi-tenant data sharing. You can request deletion anytime.</p>
+      </div>
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">What about retries?</h3>
+        <p class="text-gray-600 mt-2">We retry up to 5 times with exponential backoff when destination returns a non-2xx.</p>
+      </div>
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">How do I prevent spoofed requests?</h3>
+        <p class="text-gray-600 mt-2">Enable HMAC. Include <span class="code">X-Signature</span> with hex SHA-256 of the raw body using your signing secret.</p>
+      </div>
+      <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
+        <h3 class="font-semibold">Can I use non-FDA topics?</h3>
+        <p class="text-gray-600 mt-2">Yes. Use any topic string you want. The <span class="code">auto</span> template falls back to a generic message format.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200">
+    <div class="max-w-6xl mx-auto px-4 py-10 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+      <p class="text-sm text-gray-600">© <span id="year"></span> Webhook Router. All rights reserved.</p>
+      <div class="text-sm text-gray-600 flex gap-4">
+        <a href="#" class="underline">Terms</a>
+        <a href="#" class="underline">Privacy</a>
+        <a id="contact" href="mailto:founder@yourdomain.com" class="underline">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
