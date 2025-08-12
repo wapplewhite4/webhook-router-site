@@ -11,7 +11,6 @@
   <style>
     html { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol; }
     .code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    .kbd { @apply inline-flex items-center px-2 py-0.5 rounded-md bg-gray-800 text-gray-100 text-xs ring-1 ring-inset ring-gray-700; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -28,6 +27,7 @@
         <a href="#quickstart" class="hover:text-black">Quickstart</a>
         <a href="#api" class="hover:text-black">API</a>
         <a href="#pricing" class="hover:text-black">Pricing</a>
+        <a href="#nocode" class="hover:text-black">No-code</a>
         <a href="#faq" class="hover:text-black">FAQ</a>
       </nav>
       <div class="flex items-center gap-3">
@@ -45,6 +45,7 @@
         <p class="mt-4 text-gray-700 text-lg">Webhook Router ingests JSON, applies sensible templates for FDA guidance & recalls, and delivers to <span class="font-semibold">Slack</span>, <span class="font-semibold">Microsoft Teams</span>, <span class="font-semibold">Discord</span>, or a generic webhook.</p>
         <div class="mt-6 flex flex-wrap gap-3">
           <a href="#pricing" class="px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Buy access</a>
+          <a href="https://setup-router.mandias.app/setup" class="px-4 py-2 rounded-xl border border-gray-300 hover:border-gray-900">No-code setup</a>
           <a href="#quickstart" class="px-4 py-2 rounded-xl border border-gray-300 hover:border-gray-900">Read the docs</a>
         </div>
         <p class="mt-3 text-xs text-gray-500">Hosted on Fly.io • Own API key • Optional HMAC signing • Postgres-backed</p>
@@ -147,6 +148,22 @@ curl -s -X POST https://api.yourdomain.com/ingest/fda.guidance \
     </div>
   </section>
 
+  <!-- No-code section -->
+  <section id="nocode" class="max-w-6xl mx-auto px-4 py-12">
+    <div class="p-6 md:p-8 rounded-2xl bg-white border border-gray-200 shadow-sm grid md:grid-cols-2 gap-6 items-center">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-bold">No-code setup</h2>
+        <p class="text-gray-700 mt-2">Create a project, add a route, and send a test — all in the browser.</p>
+        <a href="https://setup-router.mandias.app/setup" class="mt-4 inline-block px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Open setup</a>
+      </div>
+      <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+        <pre class="code text-xs overflow-x-auto"><code>// 1) Open the setup page
+// 2) Paste your Slack/Teams/Discord webhook URL
+// 3) Click “Send test”</code></pre>
+      </div>
+    </div>
+  </section>
+
   <!-- API Reference -->
   <section id="api" class="max-w-6xl mx-auto px-4 py-12">
     <h2 class="text-2xl md:text-3xl font-bold">API Reference</h2>
@@ -197,7 +214,7 @@ Response: Route[]</code></pre>
         <h3 class="font-semibold">POST /ingest/{topic}</h3>
         <p class="text-gray-600 mt-2">Ingest an event payload for a topic. Routes with a matching topic will receive formatted messages.</p>
         <pre class="code text-sm overflow-x-auto mt-3"><code>Headers: X-Api-Key, X-Signature (optional/required if signing is configured)
-Body: { payload: any JSON } OR raw JSON (service accepts raw JSON bodies and wraps internally)
+Body: raw JSON
 Response: { status: "accepted", event_id: number, routes: number[], soft_limit: boolean }
 Errors: 401 (auth), 404 (no route), 429 (plan hard limit)
 </code></pre>
@@ -208,6 +225,15 @@ Errors: 401 (auth), 404 (no route), 429 (plan hard limit)
   <!-- Pricing -->
   <section id="pricing" class="max-w-6xl mx-auto px-4 py-12">
     <h2 class="text-2xl md:text-3xl font-bold">Pricing</h2>
+
+    <!-- Email capture used for Stripe checkout/portal -->
+    <div class="max-w-md mt-4">
+      <label class="text-sm text-gray-700">Billing email</label>
+      <input id="billingEmail" type="email" placeholder="you@company.com"
+             class="mt-1 w-full border rounded-xl p-2.5" />
+      <p id="billingMsg" class="text-xs text-gray-600 mt-1"></p>
+    </div>
+
     <div class="grid md:grid-cols-3 gap-6 mt-6">
       <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
         <h3 class="font-semibold text-lg">Free</h3>
@@ -215,19 +241,27 @@ Errors: 401 (auth), 404 (no route), 429 (plan hard limit)
         <p class="text-3xl font-extrabold mt-4">$0</p>
         <a href="#quickstart" class="mt-4 inline-block px-4 py-2 rounded-xl border border-gray-300 hover:border-gray-900">Start</a>
       </div>
+
       <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm ring-2 ring-black">
         <h3 class="font-semibold text-lg">Basic</h3>
         <p class="text-gray-600">3 projects • 10 routes • 10k events/mo</p>
         <p class="text-3xl font-extrabold mt-4">$9<span class="text-base font-normal">/mo</span></p>
-        <a href="https://your-checkout-link" class="mt-4 inline-block px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Buy</a>
+        <button id="btnBuyBasic" class="mt-4 inline-block px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Buy</button>
       </div>
+
       <div class="p-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
         <h3 class="font-semibold text-lg">Pro</h3>
         <p class="text-gray-600">Unlimited projects/routes • 100k events/mo</p>
         <p class="text-3xl font-extrabold mt-4">$29<span class="text-base font-normal">/mo</span></p>
-        <a href="https://your-checkout-link" class="mt-4 inline-block px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Buy</a>
+        <button id="btnBuyPro" class="mt-4 inline-block px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-900">Buy</button>
       </div>
     </div>
+
+    <div class="mt-4 flex items-center gap-3">
+      <button id="btnPortal" class="px-3 py-1.5 rounded-xl border border-gray-300 hover:border-gray-900">Manage billing</button>
+      <span id="pricingMsg" class="text-sm text-gray-600"></span>
+    </div>
+
     <p class="text-xs text-gray-500 mt-3">Need higher limits or on-prem? <a href="#contact" class="underline">Contact us</a>.</p>
   </section>
 
@@ -267,7 +301,63 @@ Errors: 401 (auth), 404 (no route), 429 (plan hard limit)
   </footer>
 
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    // ---- Config ----
+    const API_BASE = 'https://setup-router.mandias.app'; // Fly app with billing endpoints
+    const SUCCESS_URL = location.origin + '/thanks';
+    const CANCEL_URL  = location.origin + '#pricing';
+
+    // ---- Utilities ----
+    const $ = (id) => document.getElementById(id);
+    const setMsg = (el, text) => el && (el.textContent = text);
+
+    // ---- Stripe actions ----
+    async function checkout(tier) {
+      const email = $('billingEmail').value.trim();
+      if (!email) { setMsg($('pricingMsg'), 'Enter a billing email first.'); $('billingEmail').focus(); return; }
+      setMsg($('pricingMsg'), 'Creating checkout…');
+
+      try {
+        const res = await fetch(API_BASE + '/billing/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, tier, success_url: SUCCESS_URL, cancel_url: CANCEL_URL })
+        });
+        const j = await res.json();
+        if (!res.ok) throw new Error(j.detail || res.statusText);
+        if (!j.url) throw new Error('No checkout URL returned');
+        window.location.href = j.url;
+      } catch (e) {
+        setMsg($('pricingMsg'), 'Error: ' + e.message);
+      }
+    }
+
+    async function portal() {
+      const email = $('billingEmail').value.trim();
+      if (!email) { setMsg($('pricingMsg'), 'Enter your billing email to manage.'); $('billingEmail').focus(); return; }
+      setMsg($('pricingMsg'), 'Opening customer portal…');
+
+      try {
+        const res = await fetch(API_BASE + '/billing/portal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, return_url: SUCCESS_URL })
+        });
+        const j = await res.json();
+        if (!res.ok) throw new Error(j.detail || res.statusText);
+        if (!j.url) throw new Error('No portal URL returned');
+        window.location.href = j.url;
+      } catch (e) {
+        setMsg($('pricingMsg'), 'Error: ' + e.message);
+      }
+    }
+
+    // ---- Wire buttons ----
+    window.addEventListener('DOMContentLoaded', () => {
+      $('year').textContent = new Date().getFullYear();
+      $('btnBuyBasic').addEventListener('click', () => checkout('basic'));
+      $('btnBuyPro').addEventListener('click', () => checkout('premium'));
+      $('btnPortal').addEventListener('click', portal);
+    });
   </script>
 </body>
 </html>
